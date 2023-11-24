@@ -1,0 +1,42 @@
+version: '3.7'
+
+services:
+
+  telegram-bot:
+    container_name: "telegram-bot"
+    build:
+      context: ./telegram_bot
+      dockerfile: ./Dockerfile
+    env_file: telegram_bot/.env.bot
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      - backend
+
+  database:
+    container_name: "database"
+    image: postgres:15.3
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=eva
+    ports:
+      - '5432:5432'
+
+
+  backend:
+    container_name: "backend"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ./backend/src:/home/my_user/src
+    ports:
+      - '8001:8000'
+    depends_on:
+      - database
+    env_file:
+      - ./backend/.env
